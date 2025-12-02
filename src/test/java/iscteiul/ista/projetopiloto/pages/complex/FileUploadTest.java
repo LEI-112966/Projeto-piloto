@@ -34,7 +34,7 @@ public class FileUploadTest {
         driver.get("https://the-internet.herokuapp.com/upload");
         FileUploadPage uploadPage = new FileUploadPage(driver);
 
-        String filePath = new File("src/test/resources/example.txt").getAbsolutePath();
+        String filePath = new File("example.txt").getAbsolutePath();
 
         wait.until(ExpectedConditions.elementToBeClickable(uploadPage.getFileInput()));
         wait.until(ExpectedConditions.elementToBeClickable(uploadPage.getSubmitButton()));
