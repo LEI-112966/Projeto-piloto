@@ -101,7 +101,7 @@ public class MainPageTest {
         mainPage.seeDeveloperToolsButton.click();
 
         wait.until(ExpectedConditions.elementToBeClickable(mainPage.findYourToolsButton));
-        new org.openqa.selenium.interactions.Actions(driver) //cria uma nova ação do Selenium
+        new org.openqa.selenium.interactions.Actions(driver) //cria uma ação do Selenium
                 .moveToElement(mainPage.findYourToolsButton) //move o cursor até ao botão
                 .pause(java.time.Duration.ofMillis(150)) //pausa para simular o tempo de reação do utilizador
                 .click() //clica no botão
