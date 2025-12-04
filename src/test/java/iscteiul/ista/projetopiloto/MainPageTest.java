@@ -1,7 +1,8 @@
 package iscteiul.ista.projetopiloto;
 
 import org.junit.jupiter.api.*;
-
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.openqa.selenium.By;
@@ -21,7 +22,17 @@ public class MainPageTest {
         driver.manage().window().maximize();
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.get("https://www.jetbrains.com/");
-
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        try {
+            WebElement acceptCookiesButton = wait.until(
+                    ExpectedConditions.elementToBeClickable(
+                            By.cssSelector("button.ch2-allow-all-btn")
+                    )
+            );
+            acceptCookiesButton.click();
+        } catch (Exception e) {
+            // Se o popup não aparecer por algum motivo, ignora e continua
+        }
         mainPage = new MainPage(driver);
     }
 
