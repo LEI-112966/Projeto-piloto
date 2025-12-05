@@ -1,31 +1,34 @@
 package informacaofilme.pages;
 import informacaofilme.Film;
+import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.ElementsCollection;
+import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.Selenide;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.FindBy;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Page object for the film example demo page.
  * Assumes the grid has 4 columns in order: Title, Release Year, Director, IMDB Link.
+ * Converted to use Selenide Page Factory (@FindBy + Selenide.page(this)).
  */
 public class FilmExampleDemoPage {
-    private final WebDriver driver;
-    private final WebDriverWait wait;
+    @FindBy(css = "vaadin-grid")
+    private SelenideElement grid;
 
-    private final By gridBy = By.cssSelector("vaadin-grid");
-    private final By cellContentBy = By.cssSelector("vaadin-grid-cell-content");
-    private final By sorterTitleBy = By.cssSelector("vaadin-grid-sorter[path='col5']"); // header sorter for Title
+    @FindBy(css = "vaadin-grid-sorter[path='col5']")
+    private SelenideElement sorterTitle; // header sorter for Title
 
-    public FilmExampleDemoPage(WebDriver driver) {
-        this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        wait.until(ExpectedConditions.presenceOfElementLocated(gridBy));
+    public FilmExampleDemoPage() {
+        // no-op: fields are initialized by Selenide.page(Class)
+    }
+
+    // small helper to avoid potential NPEs when checking emptiness
+    private boolean isNullOrEmpty(String s) {
+        return s == null || s.isEmpty();
     }
 
     /**
@@ -33,22 +36,21 @@ public class FilmExampleDemoPage {
      * This implementation groups cell contents in batches of 4 (title, year, director, link).
      */
     public List<Film> getFilms() {
-        WebElement grid = driver.findElement(gridBy);
-        List<WebElement> cells = grid.findElements(cellContentBy);
+        // ensure the grid is visible before interacting
+        grid.shouldBe(Condition.visible);
+        ElementsCollection cellElements = grid.$$(By.cssSelector("vaadin-grid-cell-content"));
 
         List<Film> films = new ArrayList<>();
         int cols = 4;
         // Defensive: if the header cells are present among cell elements, skip them by filtering anchors/text content heuristics.
         List<String> texts = new ArrayList<>();
-        for (WebElement c : cells) {
+        for (SelenideElement c : cellElements) {
             String text = c.getText().trim();
-            // For link cells there might be an anchor; prefer href if present
-            WebElement link = null;
+            SelenideElement link = null;
             try {
-                link = c.findElement(By.tagName("a"));
+                link = c.$("a");
             } catch (Exception ignored) {}
-            if (link != null && (text.isEmpty() || text.startsWith("Click"))) {
-                // normalize to anchor text (anchor href will be captured when grouping)
+            if (link != null && link.exists() && (text.isEmpty() || text.startsWith("Click"))) {
                 texts.add("::LINK::" + (link.getAttribute("href") != null ? link.getAttribute("href") : ""));
             } else {
                 texts.add(text);
@@ -79,12 +81,12 @@ public class FilmExampleDemoPage {
             } else {
                 // try to fetch anchor from that particular cell element directly
                 try {
-                    WebElement cellElement = cells.get(i + 3);
-                    WebElement a = cellElement.findElement(By.tagName("a"));
-                    href = a.getAttribute("href");
+                    SelenideElement cellElement = cellElements.get(i + 3);
+                    SelenideElement a = cellElement.$("a");
+                    if (a.exists()) href = a.getAttribute("href");
                 } catch (Exception ignored) {}
             }
-            if (title.isEmpty() && year.isEmpty() && director.isEmpty() && href.isEmpty()) {
+            if (isNullOrEmpty(title) && isNullOrEmpty(year) && isNullOrEmpty(director) && isNullOrEmpty(href)) {
                 continue; // skip empty rows
             }
             films.add(new Film(title, year, director, href));
@@ -97,22 +99,22 @@ public class FilmExampleDemoPage {
      * Returns true if clicked, false if not found.
      */
     public boolean clickImdbLinkByTitle(String filmTitle) {
+        grid.shouldBe(Condition.visible);
         List<Film> films = getFilms();
         for (Film f : films) {
             if (f.getTitle().equalsIgnoreCase(filmTitle)) {
                 if (f.getImdbUrl() != null && !f.getImdbUrl().isEmpty()) {
-                    driver.get(f.getImdbUrl());
+                    Selenide.open(f.getImdbUrl());
                     return true;
                 } else {
                     // fallback: try to click anchor inside grid cell that contains title
-                    WebElement grid = driver.findElement(gridBy);
-                    List<WebElement> cells = grid.findElements(cellContentBy);
-                    for (int i = 0; i + 3 < cells.size(); i += 4) {
-                        if (cells.get(i).getText().trim().equalsIgnoreCase(filmTitle)) {
+                    ElementsCollection cellElements = grid.$$(By.cssSelector("vaadin-grid-cell-content"));
+                    for (int i = 0; i + 3 < cellElements.size(); i += 4) {
+                        if (cellElements.get(i).getText().trim().equalsIgnoreCase(filmTitle)) {
                             try {
-                                WebElement linkCell = cells.get(i + 3);
-                                WebElement a = linkCell.findElement(By.tagName("a"));
-                                wait.until(ExpectedConditions.elementToBeClickable(a)).click();
+                                SelenideElement linkCell = cellElements.get(i + 3);
+                                SelenideElement a = linkCell.$("a");
+                                a.shouldBe(Condition.visible).click();
                                 return true;
                             } catch (Exception e) {
                                 return false;
@@ -130,8 +132,7 @@ public class FilmExampleDemoPage {
      */
     public void sortByTitle() {
         try {
-            WebElement sorter = driver.findElement(sorterTitleBy);
-            wait.until(ExpectedConditions.elementToBeClickable(sorter)).click();
+            sorterTitle.shouldBe(Condition.visible).click();
         } catch (Exception e) {
             // no-op if sorter not found
         }
