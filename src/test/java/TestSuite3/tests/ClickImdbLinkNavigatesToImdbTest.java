@@ -1,8 +1,8 @@
-package informacaofilme.tests;
+package TestSuite3.tests;
 
 import com.codeborne.selenide.Selenide;
-import informacaofilme.Film;
-import informacaofilme.pages.FilmExampleDemoPage;
+import TestSuite3.Film;
+import TestSuite3.pages.FilmExampleDemoPage;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

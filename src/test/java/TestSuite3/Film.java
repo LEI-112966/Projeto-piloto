@@ -1,4 +1,4 @@
-package informacaofilme;
+package TestSuite3;
 import java.util.Objects;
 
 public class Film {

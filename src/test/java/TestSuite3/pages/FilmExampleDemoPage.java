@@ -1,5 +1,5 @@
-package informacaofilme.pages;
-import informacaofilme.Film;
+package TestSuite3.pages;
+import TestSuite3.Film;
 import com.codeborne.selenide.SelenideElement;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Condition;
