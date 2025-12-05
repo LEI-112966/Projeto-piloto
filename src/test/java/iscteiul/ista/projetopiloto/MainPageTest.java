@@ -1,19 +1,17 @@
 package iscteiul.ista.projetopiloto;
 
 import org.junit.jupiter.api.*;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class MainPageTest {
+
     private WebDriver driver;
     private MainPage mainPage;
 
@@ -41,7 +39,9 @@ public class MainPageTest {
 
     @AfterEach
     public void tearDown() {
-        driver.quit();
+        if (driver != null) {
+            driver.quit();
+        }
     }
 
     @Test
@@ -60,13 +60,19 @@ public class MainPageTest {
         assertEquals("Selenium", searchPageField.getAttribute("value"));
     }
 
+
     @Test
     public void toolsMenu() {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        // Abre o menu (Developer Tools / menu principal)
         mainPage.toolsMenu.click();
 
         WebElement menuPopup = driver.findElement(By.cssSelector("div[data-test='main-menu-item']"));
         assertTrue(menuPopup.isDisplayed());
     }
+
+
 
     @Test
     public void navigationToAllTools() {
@@ -75,10 +81,12 @@ public class MainPageTest {
                 ExpectedConditions.elementToBeClickable(mainPage.toolsMenu)
         );
         mainPage.seeDeveloperToolsButton.click();
-        mainPage.findYourToolsButton.click();
 
         WebElement productsList = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("products-page")));
         assertTrue(productsList.isDisplayed());
+
+        wait.until(ExpectedConditions.titleIs("All Developer Tools and Products by JetBrains"));
         assertEquals("All Developer Tools and Products by JetBrains", driver.getTitle());
     }
 }
+
