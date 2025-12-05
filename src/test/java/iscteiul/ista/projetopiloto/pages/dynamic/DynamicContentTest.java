@@ -1,4 +1,4 @@
-package iscteiul.ista.projetopiloto;
+package iscteiul.ista.projetopiloto.pages.dynamic;
 
 import org.junit.jupiter.api.*;
 import org.openqa.selenium.WebDriver;

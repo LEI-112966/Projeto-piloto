@@ -1,4 +1,4 @@
-package iscteiul.ista.projetopiloto;
+package iscteiul.ista.projetopiloto.pages.dynamic;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
