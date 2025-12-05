@@ -89,4 +89,3 @@ public class MainPageTest {
         assertEquals("All Developer Tools and Products by JetBrains", driver.getTitle());
     }
 }
-
