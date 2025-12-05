@@ -132,9 +132,21 @@ public class FilmExampleDemoPage {
      */
     public void sortByTitle() {
         try {
+            // capture a snapshot before clicking so we can wait for the grid to update
+            List<String> before = getFilms().stream().map(Film::getTitle).toList();
             sorterTitle.shouldBe(Condition.visible).click();
+            // wait up to 5s for the grid order to change
+            long end = System.currentTimeMillis() + 5000;
+            while (System.currentTimeMillis() < end) {
+                List<String> after = getFilms().stream().map(Film::getTitle).toList();
+                if (!after.equals(before)) {
+                    return;
+                }
+                // short pause before retrying
+                Selenide.sleep(200);
+            }
         } catch (Exception e) {
-            // no-op if sorter not found
+            // no-op if sorter not found or wait interrupted
         }
     }
 }
