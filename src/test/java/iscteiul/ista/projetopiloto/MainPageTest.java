@@ -76,15 +76,20 @@ public class MainPageTest {
 
     @Test
     public void navigationToAllTools() {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
-        wait .until(
-                ExpectedConditions.elementToBeClickable(mainPage.toolsMenu)
-        );
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(ExpectedConditions.elementToBeClickable(mainPage.seeDeveloperToolsButton));
         mainPage.seeDeveloperToolsButton.click();
+        wait.until(ExpectedConditions.elementToBeClickable(mainPage.findYourToolsButton));
+        new org.openqa.selenium.interactions.Actions(driver) //cria uma nova ação do Selenium
+                .moveToElement(mainPage.findYourToolsButton) //move o cursor até ao botão
+                .pause(java.time.Duration.ofMillis(150)) //pausa para simular o tempo de reação do utilizador
+                .click() //clica no botão
+                .perform(); //executa a ação
 
-        WebElement productsList = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("products-page")));
+        WebElement productsList = wait.until(
+                ExpectedConditions.visibilityOfElementLocated(By.id("products-page"))
+        );
         assertTrue(productsList.isDisplayed());
-
         wait.until(ExpectedConditions.titleIs("All Developer Tools and Products by JetBrains"));
         assertEquals("All Developer Tools and Products by JetBrains", driver.getTitle());
     }
