@@ -34,11 +34,21 @@ public class DynamicContentTest {
     @Test
     public void contentChangeAfterRefresh() {
         List<String> firstLoadTexts = dynamicContentPage.getRowTexts();
-
         dynamicContentPage.refresh();
-
         List<String> secondLoadTexts = dynamicContentPage.getRowTexts();
-
         assertNotEquals(firstLoadTexts, secondLoadTexts);
     }
+
+    @Test
+    public void hasAtLeastThreeRows() {
+        List<String> texts = dynamicContentPage.getRowTexts();
+        assertTrue(texts.size() >= 3);
+    }
+
+    @Test
+    public void rowsNotBeEmpty() {
+        List<String> texts = dynamicContentPage.getRowTexts();
+        assertTrue(texts.stream().anyMatch(t -> !t.trim().isEmpty()));
+    }
+
 }
