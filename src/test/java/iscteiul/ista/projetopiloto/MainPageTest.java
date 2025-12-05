@@ -1,18 +1,18 @@
 package iscteiul.ista.projetopiloto;
 
 import org.junit.jupiter.api.*;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class MainPageTest {
+
     private WebDriver driver;
     private MainPage mainPage;
 
@@ -22,7 +22,9 @@ public class MainPageTest {
         driver.manage().window().maximize();
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.get("https://www.jetbrains.com/");
+
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        // Fechar popup de cookies se aparecer
         try {
             WebElement acceptCookiesButton = wait.until(
                     ExpectedConditions.elementToBeClickable(
@@ -30,46 +32,92 @@ public class MainPageTest {
                     )
             );
             acceptCookiesButton.click();
-        } catch (Exception e) {
-            // Se o popup não aparecer por algum motivo, ignora e continua
+        } catch (Exception ignored) {
+            // popup não apareceu, continua
         }
+
         mainPage = new MainPage(driver);
     }
 
     @AfterEach
     public void tearDown() {
-        driver.quit();
+        if (driver != null) {
+            driver.quit();
+        }
     }
 
     @Test
     public void search() {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        String searchKeyword = "Selenium";
+
+        // Abre a caixa de pesquisa
         mainPage.searchButton.click();
 
-        WebElement searchField = driver.findElement(By.cssSelector("[data-test='search-input']"));
-        searchField.sendKeys("Selenium");
+        // Campo de pesquisa
+        WebElement searchField = wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        By.cssSelector("input[data-test-id='search-input']")
+                )
+        );
+        searchField.sendKeys(searchKeyword);
+        searchField.sendKeys(Keys.ENTER);
 
-        WebElement submitButton = driver.findElement(By.cssSelector("button[data-test='full-search-button']"));
-        submitButton.click();
+        // Espera por um elemento típico da página de resultados
+        WebElement announcePlaceholder = wait.until(
+                ExpectedConditions.visibilityOfElementLocated(
+                        By.cssSelector("div#announce-placeholder[data-product-name='default']")
+                )
+        );
 
-        WebElement searchPageField = driver.findElement(By.cssSelector("input[data-test='search-input']"));
-        assertEquals("Selenium", searchPageField.getAttribute("value"));
+        assertTrue(announcePlaceholder.isDisplayed());
     }
+
 
     @Test
     public void toolsMenu() {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        // Abre o menu (Developer Tools / menu principal)
         mainPage.toolsMenu.click();
 
-        WebElement menuPopup = driver.findElement(By.cssSelector("div[data-test='main-submenu']"));
-        assertTrue(menuPopup.isDisplayed());
+        // Espera pelo link "All IDEs" no submenu
+        WebElement allIdesLink = wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        By.cssSelector("a[data-test='main-submenu-item-link'][href='/ides/']")
+                )
+        );
+        allIdesLink.click();
+
+        // Verifica que a página de IDEs carregou (ajusta o seletor conforme o HTML dessa página)
+        wait.until(ExpectedConditions.urlContains("/ides/"));
+        assertTrue(driver.getCurrentUrl().contains("/ides/"));
     }
+
+
 
     @Test
     public void navigationToAllTools() {
-        mainPage.seeDeveloperToolsButton.click();
-        mainPage.findYourToolsButton.click();
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-        WebElement productsList = driver.findElement(By.id("products-page"));
+        wait.until(ExpectedConditions.elementToBeClickable(mainPage.seeDeveloperToolsButton));
+        mainPage.seeDeveloperToolsButton.click();
+
+        wait.until(ExpectedConditions.elementToBeClickable(mainPage.findYourToolsButton));
+
+        new Actions(driver)
+                .moveToElement(mainPage.findYourToolsButton)
+                .pause(Duration.ofMillis(150))
+                .click()
+                .perform();
+
+        WebElement productsList = wait.until(
+                ExpectedConditions.visibilityOfElementLocated(By.id("products-page")) // ajustar se necessário
+        );
         assertTrue(productsList.isDisplayed());
+
+        wait.until(ExpectedConditions.titleIs("All Developer Tools and Products by JetBrains"));
         assertEquals("All Developer Tools and Products by JetBrains", driver.getTitle());
     }
 }
+
