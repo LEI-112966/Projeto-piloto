@@ -1,4 +1,4 @@
-package testsuite8_basicfeatures;
+package testsuite8_basicfeatures.tests;
 
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.logevents.SelenideLogger;
