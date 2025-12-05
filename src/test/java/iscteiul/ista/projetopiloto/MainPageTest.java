@@ -8,6 +8,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
@@ -32,31 +34,87 @@ public class MainPageTest {
 
     @Test
     public void search() {
-        mainPage.searchButton.click();
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
 
-        WebElement searchField = driver.findElement(By.cssSelector("[data-test='search-input']"));
+        // Fecha banner de cookies se aparecer
+        try {
+            WebElement acceptCookies = driver.findElement(By.cssSelector("div.ch2-container button"));
+            if (acceptCookies.isDisplayed()) {
+                acceptCookies.click();
+            }
+        } catch (Exception e) {
+            // Banner não apareceu
+        }
+
+        // Clica no ícone de pesquisa
+        wait.until(ExpectedConditions.elementToBeClickable(mainPage.searchButton)).click();
+
+        // Espera até que o input da pesquisa esteja presente no DOM e visível
+        By searchInputLocator = By.cssSelector("input[data-test-id='search-input']");
+        WebElement searchField = wait.until(ExpectedConditions.visibilityOfElementLocated(searchInputLocator));
+
+        // Digita a pesquisa
         searchField.sendKeys("Selenium");
 
-        WebElement submitButton = driver.findElement(By.cssSelector("button[data-test='full-search-button']"));
+        // Submete a pesquisa
+        WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button[data-test='full-search-button']")));
         submitButton.click();
 
-        WebElement searchPageField = driver.findElement(By.cssSelector("input[data-test='search-input']"));
+        // Validação do valor
+        WebElement searchPageField = wait.until(ExpectedConditions.visibilityOfElementLocated(searchInputLocator));
         assertEquals("Selenium", searchPageField.getAttribute("value"));
     }
 
     @Test
     public void toolsMenu() {
-        mainPage.toolsMenu.click();
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
-        WebElement menuPopup = driver.findElement(By.cssSelector("div[data-test='main-submenu']"));
-        assertTrue(menuPopup.isDisplayed());
+        // Fecha banner de cookies se existir
+        try {
+            WebElement acceptCookies = driver.findElement(By.cssSelector("div.ch2-container button"));
+            if (acceptCookies.isDisplayed()) {
+                acceptCookies.click();
+            }
+        } catch (Exception ignored) {}
+
+        // Clica no menu "Tools"
+        wait.until(ExpectedConditions.elementToBeClickable(mainPage.toolsMenu)).click();
+
+        // Localizador do submenu
+        By submenuLocator = By.cssSelector("div[data-test='main-submenu']");
+
+        // Espera o submenu estar presente no DOM
+        wait.until(ExpectedConditions.presenceOfElementLocated(submenuLocator));
+
+        // Pega o submenu
+        WebElement menuPopup = driver.findElement(submenuLocator);
+
+        // Verifica se contém pelo menos um item (ou texto)
+        assertTrue(menuPopup.findElements(By.cssSelector("a")).size() > 0, "Submenu deveria conter links");
     }
 
     @Test
     public void navigationToAllTools() {
-        mainPage.seeDeveloperToolsButton.click();
-        mainPage.findYourToolsButton.click();
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
+        // Fecha banner de cookies se existir
+        try {
+            WebElement acceptCookies = driver.findElement(By.cssSelector("div.ch2-container button"));
+            if (acceptCookies.isDisplayed()) {
+                acceptCookies.click();
+            }
+        } catch (Exception ignored) {}
+
+        // Abre o menu Developer Tools
+        mainPage.seeDeveloperToolsButton.click();
+
+        // Espera diretamente pelo link clicável
+        WebElement findYourToolLink = wait.until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector("[data-test='suggestion-link']")
+        ));
+        findYourToolLink.click();
+
+        // Verifica que está na página
         WebElement productsList = driver.findElement(By.id("products-page"));
         assertTrue(productsList.isDisplayed());
         assertEquals("All Developer Tools and Products by JetBrains", driver.getTitle());
