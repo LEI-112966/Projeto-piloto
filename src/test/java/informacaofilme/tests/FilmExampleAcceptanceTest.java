@@ -1,8 +1,10 @@
-package informacaofilme;
+package informacaofilme.tests;
 
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.WebDriverRunner;
+import informacaofilme.Film;
+import informacaofilme.pages.FilmExampleDemoPage;
 import org.junit.jupiter.api.*;
 
 import java.util.ArrayList;
